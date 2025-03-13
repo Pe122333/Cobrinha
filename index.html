@@ -18,6 +18,7 @@
             height: 100vh;
             background: linear-gradient(135deg, #2b5876, #4e4376);
             font-family: Arial, sans-serif;
+            flex-direction: column;
         }
 
         .game-container {
@@ -39,12 +40,51 @@
             font-size: 20px;
             font-weight: bold;
         }
+
+        .joystick {
+            display: none;
+            position: absolute;
+            bottom: 50px;
+            display: grid;
+            grid-template-columns: repeat(3, 50px);
+            grid-template-rows: repeat(3, 50px);
+            gap: 5px;
+            justify-content: center;
+        }
+
+        .joystick button {
+            width: 50px;
+            height: 50px;
+            background: #fff;
+            border: none;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .joystick button:active {
+            background: #ddd;
+        }
     </style>
 </head>
 <body>
+    <script>
+        let isMobile = confirm("Você está jogando em um smartphone ou tablet? (OK para Sim, Cancelar para Não)");
+    </script>
     <div class="game-container">
         <div class="score">Pontuação: <span id="score">0</span></div>
         <canvas id="gameCanvas" width="400" height="400"></canvas>
+    </div>
+    <div class="joystick" id="joystick">
+        <button onclick="changeDirection('UP')" style="grid-column: 2; grid-row: 1;">▲</button>
+        <button onclick="changeDirection('LEFT')" style="grid-column: 1; grid-row: 2;">◄</button>
+        <button onclick="changeDirection('RIGHT')" style="grid-column: 3; grid-row: 2;">►</button>
+        <button onclick="changeDirection('DOWN')" style="grid-column: 2; grid-row: 3;">▼</button>
     </div>
     <script>
         const canvas = document.getElementById("gameCanvas");
@@ -56,6 +96,10 @@
         let food = { x: 100, y: 100 };
         let score = 0;
         let gameInterval;
+
+        if (isMobile) {
+            document.getElementById("joystick").style.display = "grid";
+        }
 
         function drawSnake() {
             ctx.fillStyle = "#00FF00";
@@ -115,12 +159,17 @@
         }
 
         window.addEventListener("keydown", (event) => {
-            const key = event.key;
-            if ((key === "ArrowUp" || key === "w") && direction !== "DOWN") direction = "UP";
-            if ((key === "ArrowDown" || key === "s") && direction !== "UP") direction = "DOWN";
-            if ((key === "ArrowLeft" || key === "a") && direction !== "RIGHT") direction = "LEFT";
-            if ((key === "ArrowRight" || key === "d") && direction !== "LEFT") direction = "RIGHT";
+            changeDirection(event.key.replace('Arrow', '').toUpperCase());
         });
+
+        function changeDirection(newDirection) {
+            if ((newDirection === "UP" && direction !== "DOWN") ||
+                (newDirection === "DOWN" && direction !== "UP") ||
+                (newDirection === "LEFT" && direction !== "RIGHT") ||
+                (newDirection === "RIGHT" && direction !== "LEFT")) {
+                direction = newDirection;
+            }
+        }
 
         function startGame() {
             food = generateFood();
